@@ -1,5 +1,5 @@
-import junit.framework.TestCase;
 
-public class TestEnumTest extends TestCase {
+
+public class TestEnumTest {
         
 }

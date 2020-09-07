@@ -134,5 +134,4 @@ public class enumdemo {
             System.out.println("DATA"+":"+tk);
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package DynamicProxy;
 public class BirdFlying implements TestInterface{
+
     public BirdFlying() {
     }
     @Override
