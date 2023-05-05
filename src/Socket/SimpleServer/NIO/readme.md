@@ -6,6 +6,7 @@ NIO服务器
 - Selector在ServerSocketChannel中注册了关心的事件之后，一旦触发，就可以根据key获取到对应的通道，并进行数据的读写。
 - SercerSocketChannel和SocketChannel都实现了SelectableChannel的接口，这个接口定义了一系列的标准的非阻塞的函数。单纯的使用slector.select()还是没有排除的轮询的NIO，后面引入Reactor反应模式的模型，使用reactor、handler才能摆脱掉while轮询。这个跟线程进行挂钩。是真正的能用得上的模型。
 - 另外,这一段在Linux下面还有一个空轮询的bug。就是selector.select()原本是阻塞的，在客户端断开连接时候会执行，所以需要新建一个Selector进行判断是否空轮询[CSDN空轮询](https://blog.csdn.net/fedorafrog/article/details/113553943)
+- 不建议使用while(true)进行轮询。因为空轮询的bug.建议select()>0的方式处理，简单高效。
 - 关于Netty
 - Netty丢弃了Bytebuffer，使用ByteBuf。使用了多反应器，多线程处理的模式。
 - Netty支持应用层支持多协议。底层也是基于NIO。
