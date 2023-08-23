@@ -10,6 +10,11 @@ import java.util.Vector;
 
 
 
+
+
+
+
+
 public class BTree {
     
     //Node节点定义
@@ -149,6 +154,7 @@ public class BTree {
         }
     }
 
+    
     //二叉树的先序遍历
     private void preRecusive(Node root){
         if(root.value!=null)
@@ -157,6 +163,19 @@ public class BTree {
             preRecusive(root.leftChild);
         if(root.rightChild!=null)
             preRecusive(root.rightChild);
+    }
+
+    public void recusiveWeight(){
+        preRecusiveWithWeight(root);
+    }
+    //值比较的先序遍历
+    private void preRecusiveWithWeight(Node root){
+        if(root.weight!=0)
+            System.out.print(root.weight+" ");
+        if(root.leftChild!=null)
+            preRecusiveWithWeight(root.leftChild);
+        if(root.rightChild!=null)
+            preRecusiveWithWeight(root.rightChild);
     }
 
     /*
@@ -243,10 +262,30 @@ public class BTree {
             if(firstData.leftChild!=null){
                 container.add(firstData.leftChild);
             }
-            if(firstData.rightChild!=null){ 
+            if(firstData.value!=null&& firstData.value.equals("&")&&!container.isEmpty()){
+                container.add(seperator);
+                height++;
+            }
+        }
+        return height;
+    }
+
+    private int getTreeHeightWithWeight(Node root){
+        int height = 1 ;
+        Node seperator = new Node();
+        seperator.weight = -1;
+        Queue<Node> container= new ArrayDeque<>();
+        container.add(root);
+        container.add(seperator);
+        while(!container.isEmpty()){
+            Node firstData = container.poll();
+            if(firstData.leftChild!=null){
+                container.add(firstData.leftChild);
+            }
+            if(firstData.rightChild!=null){
                 container.add(firstData.rightChild);
             }
-            if(firstData.value.equals("&")&&!container.isEmpty()){
+            if(firstData.weight!=0&& firstData.weight==-1&&!container.isEmpty()){
                 container.add(seperator);
                 height++;
             }
@@ -557,41 +596,407 @@ public class BTree {
 
     //todo:红黑树,TreeMap中有对应实现。
 
+
+
     
     //todo: 最小堆构造huffman树，首先每个节点都是带有权值的。所有节点都是叶子节点，满足WPL最小
     public void Huffman(int[] weightArr){
-
+        
     }
 
     //二叉排序树,这种树就是左边小，右边大。非要分个大小真是有点不爽。只能用int型数据。
     //如果对Object类型数据，可以比较hash值试试。这个树的特点就是方便查找节点。
     //这里使用huffman的整形节点存储元素值
-    public void constructTree(int target){
-        Node cursor = new Node();
-        cursor = root;
-        while(target<cursor.weight){
-            if(cursor.leftChild==null){
-                Node  newNode = new Node();
-                newNode.weight = target;
-                cursor.leftChild = newNode;
+    public void constructSortedTree(int target){
+        Node treeCursor = new Node();
+        treeCursor = root;
+        while(treeCursor.leftChild!=null||treeCursor.rightChild!=null){
+            if(target<treeCursor.weight){
+                if(treeCursor.leftChild==null){
+                    Node  newNode = new Node();
+                    newNode.weight = target;
+                    treeCursor.leftChild = newNode;
+                    return;
+                }
+                treeCursor =treeCursor.leftChild;
             }
-            cursor =cursor.leftChild;
-        }
-        if(target==cursor.weight){
-            System.out.println("重复的元素，不需要添加。");
-        }
-        while(target>cursor.weight){
-            if(cursor.rightChild==null){
-                Node newNode = new Node();
-                newNode.weight = target;
-                cursor.rightChild = newNode;
+            if(target==treeCursor.weight){
+                System.out.println("重复的元素，不需要添加。");
             }
-            cursor = cursor.rightChild;
+            if(target>treeCursor.weight){
+                if(treeCursor.rightChild==null){
+                    Node newNode = new Node();
+                    newNode.weight = target;
+                    treeCursor.rightChild = newNode;
+                    return;
+                }
+                treeCursor = treeCursor.rightChild;
+            }
+        } 
+        if(treeCursor.weight>target){
+            Node newNode = new Node();
+            newNode.weight = target;
+            treeCursor.leftChild = newNode;
+        }
+        if(treeCursor.weight<target){
+            Node newNode = new Node();
+            newNode.weight = target;
+            treeCursor.rightChild = newNode;
         }
     }
 
-    //平衡二叉树AVL
-    //删除
+    //代码复用前一个函数,非递归查找,有两个出口,递归的话只有一个出口.
+    public void findNodeInSortedTree(int target ){
+        Node treeCursor = new Node();
+        treeCursor = root;
+        while(treeCursor.leftChild!=null||treeCursor.rightChild!=null){
+            if(target<treeCursor.weight){
+                treeCursor =treeCursor.leftChild;
+            }
+            if(target==treeCursor.weight){
+                System.out.println("1已找到元素");
+                return;
+            }
+            if(target>treeCursor.weight){
+                treeCursor = treeCursor.rightChild;
+            }
+        }
+        if(treeCursor.weight==target){
+            System.out.println("2已找到元素");
+            return;
+        }
+        //比较到叶子节点也还没有,就是没有该节点了.
+        System.out.println("不存在的元素,请检查输入");
+    }
+
+    //先查找,后删除,代码复用前一个函数,非根节点删完提左子树的最大值或者右子树的最小值作为根节点都可
+    //关于这个删除的说明，我觉得pdai的说明不够简洁，可以查阅b站青空の霞光数据结构关于这一节的解释。我是按照这个思路实现的。
+    public void deleteSortedNode(int target){
+        //栈用来存先序节点，栈顶即为递归的父节点
+        Stack<Node> data= new Stack<>();
+        realDeleteNode1(data,root,target); 
+    }
+
+    private void realDeleteNode1(Stack<Node> stack,Node cursor,int target){
+        Stack<Node> container = new Stack<>();
+        while(cursor.leftChild!=null || cursor.rightChild!=null||cursor.weight==target){
+            if(target<cursor.weight){
+                container.push(cursor);
+                cursor =cursor.leftChild;
+            }
+            if(target==cursor.weight){
+                System.out.println("找到元素");
+                //执行删除
+                realDeleteNode(container,cursor,target);
+                return;
+            }
+            if(target>cursor.weight){
+                container.push(cursor);
+                cursor = cursor.rightChild;
+            }
+        }
+    }
+
+    private void realDeleteNode(Stack<Node> stack,Node cursor,int target){
+        Node temp = new Node(); 
+        if(cursor.leftChild==null&&cursor.rightChild==null){
+            Node father = stack.pop();
+            if(father.leftChild!=null&&father.leftChild==cursor){
+                    father.leftChild=null;
+            }
+            if(father.rightChild!=null&&father.rightChild==cursor){
+                    father.rightChild=null;
+            }
+            return;
+        }
+            //非叶子节点.有左子树提升左边最大值,有右子树提升右边最小值
+        if(cursor.leftChild!=null){
+            //用temp去遍历子树,curosr用来保存根节点
+            temp = cursor.leftChild;
+            //遍历到的时候,使用cursorparent保存父节点
+            while(temp.rightChild!=null){
+                stack.push(temp);
+                temp= temp.rightChild;
+            }
+            //有该节点有左子树,提升左子树为父节点右子树,
+            if(temp.leftChild!=null){
+                if(temp==cursor.leftChild){
+                    cursor.leftChild= temp.leftChild;
+                }else{
+                    Node cursorparent = stack.pop();
+                    cursorparent.rightChild=temp.leftChild;
+                }
+            }else{
+                if(temp==cursor.leftChild){
+                    //没有子结点.将父节点的子结点值为空即可
+                    cursor.leftChild =null;
+                }else{
+                    Node cursorparent = stack.pop();
+                    cursorparent.rightChild=null;
+                }
+            }
+            //更新被删除顶点.
+            cursor.weight =temp.weight;
+            return ;
+        }   
+        if(cursor.rightChild!=null){
+            //用temp去遍历子树,curosr用来保存根节点
+            temp = cursor.rightChild;
+            //遍历到的时候,使用cursorparent保存父节点
+            while(temp.leftChild!=null){
+                stack.push(temp);
+                temp= temp.leftChild;
+            }
+            //子节点有右子树,提升右子树为父节点左子树,
+            if(temp.rightChild!=null){
+                if(temp==cursor.leftChild){
+                    cursor.rightChild=temp.rightChild;
+                }else{
+                    Node cursorparent = stack.pop();
+                    cursorparent.leftChild = temp.rightChild;
+                }
+            }else{
+                if(temp==cursor.leftChild){
+                    //没有子结点.将父节点的子结点值为空即可
+                    cursor.rightChild =null;
+                }else{
+                    Node cursorparent = stack.pop();
+                    //没有子结点.将父节点的子结点值为空即可
+                    cursorparent.leftChild =null;
+                }
+            }
+            //更新被删除节点
+            cursor.weight = temp.weight;
+            //返回最小值节点.
+            return ;
+        }
+        return ;
+    }
+
+    //构造平衡二叉树AVL，直接复用二叉排序树代码。
+    //关于树的高度。可以使用层序遍历获取。
+    public void constructAVLtree(int target){
+        Stack<Node> container = new Stack<>();
+        Node cursor = new Node();
+        cursor = root;
+        //单根节点直接返回
+        if(root.weight==0){
+            root.weight=target;
+            return;
+        }
+        //插入非叶子节点。
+        while(cursor.leftChild!=null||cursor.rightChild!=null){
+            if(target<cursor.weight){
+                if(cursor.leftChild==null){
+                    Node  newNode = new Node();
+                    newNode.weight = target;
+                    cursor.leftChild = newNode;
+                    checkBanlance(container,root);
+                    return;
+                }
+                cursor =cursor.leftChild;
+            }
+            if(target==cursor.weight){
+                System.out.println("重复的元素，不需要添加。");
+                return;
+            }
+            if(target>cursor.weight){
+                if(cursor.rightChild==null){
+                    Node newNode = new Node();
+                    newNode.weight = target;
+                    cursor.rightChild = newNode;
+                    checkBanlance(container,root);
+                    return;
+                }
+                cursor = cursor.rightChild;
+            }
+        } 
+        if(cursor.weight>target){
+            Node newNode = new Node();
+            newNode.weight = target;
+            cursor.leftChild = newNode;
+        }
+        if(cursor.weight<target){
+            Node newNode = new Node();
+            newNode.weight = target;
+            cursor.rightChild = newNode;
+        }
+        checkBanlance(container,root);
+    }
+    
+
+    private void checkBanlance(Stack<Node>stack, Node cursor){
+        //失衡，则调整
+        //找到失衡的最小树的根节点。进行调整
+        int leftHeight = cursor.leftChild==null?0:getTreeHeightWithWeight(cursor.leftChild);
+        int rightHeight = cursor.rightChild==null?0:getTreeHeightWithWeight(cursor.rightChild);
+        if(Math.abs(leftHeight-rightHeight)>1){
+            Node fatherNode =new Node();
+            if(cursor!=root){
+                fatherNode = stack.pop();
+            }
+            ajustTreeNode(fatherNode,cursor);
+        }
+        if(cursor.leftChild!=null){
+            stack.push(cursor);
+            cursor=cursor.leftChild;
+            checkBanlance(stack,cursor);
+        }
+        if(cursor.rightChild!=null){
+            stack.push(cursor);
+            cursor=cursor.rightChild;
+            checkBanlance(stack,cursor);
+        }
+    }
+
+    //旋转节点
+    private void ajustTreeNode(Node fatherNode,Node minroot){
+        int leftHeight = getTreeHeightWithWeight(minroot.leftChild);
+        int rightChild = getTreeHeightWithWeight(minroot.rightChild);
+        if(rightChild==1&&leftHeight==3){
+            Node cursor = minroot.leftChild;
+            if((cursor.leftChild!=null)&&
+                ((cursor.leftChild.leftChild!=null)||
+                    (cursor.leftChild.rightChild!=null))){
+                //LL型
+                if(fatherNode.weight==0){
+                    fatherNode.leftChild =cursor;
+                }
+                else if(fatherNode.leftChild!=null&& fatherNode.leftChild.weight==minroot.weight){
+                    fatherNode.leftChild= cursor;
+                }
+                else if(fatherNode.rightChild!=null&&fatherNode.rightChild.weight==minroot.weight){
+                    fatherNode.rightChild =cursor;
+                }
+                else{
+                    System.out.println("unknown type");
+                }
+                if(cursor.rightChild!=null){
+                    minroot.leftChild=cursor.rightChild;
+                }else{
+                    minroot.leftChild=null;
+                }
+                cursor.rightChild = minroot;
+                if(fatherNode.weight==0){
+                    //根节点的fatherNode需要调回
+                    root = fatherNode.leftChild;
+                }
+                return;
+            }
+            if((cursor.rightChild!=null)&&
+                ((cursor.rightChild.leftChild!=null)||
+                    (cursor.rightChild.rightChild!=null))){
+                //LR型
+                //调整成LL型。
+                minroot.leftChild= cursor.rightChild;
+                Node leftPad= minroot.leftChild.leftChild;
+                cursor.rightChild =leftPad==null?null:leftPad;
+                minroot.leftChild.leftChild=cursor;
+                
+                //更新一下cursor;把LL抄过来
+                cursor = minroot.leftChild;
+
+                if(fatherNode.weight==0){
+                    fatherNode.leftChild= cursor;
+                }
+                else if(fatherNode.leftChild!=null&& fatherNode.leftChild.weight==minroot.weight){
+                    fatherNode.leftChild= cursor;
+                }
+                else if(fatherNode.rightChild!=null&&fatherNode.rightChild.weight==minroot.weight){
+                    fatherNode.rightChild =cursor;
+                }
+                else{
+                    System.out.println("unknown type");
+                }
+                if(cursor.rightChild!=null){
+                    minroot.leftChild=cursor.rightChild;
+                }else{
+                    minroot.leftChild =null;
+                }
+                cursor.rightChild = minroot;
+                if(fatherNode.weight==0){
+                    //根节点的fatherNode需要调回
+                    root = fatherNode.leftChild;
+                }
+                return;
+            }
+        }
+        if(leftHeight==1&&rightChild==3){
+            Node cursor = minroot.rightChild;
+            if((cursor.rightChild!=null)&&
+                ((cursor.rightChild.leftChild!=null)||
+                (cursor.rightChild.rightChild!=null))){
+                if(fatherNode.weight==0){
+                    fatherNode.rightChild =cursor;
+                }
+                else if(fatherNode.leftChild!=null&& fatherNode.leftChild.weight==minroot.weight){
+                    fatherNode.leftChild= cursor;
+                }
+                else if(fatherNode.rightChild!=null&&fatherNode.rightChild.weight==minroot.weight){
+                    fatherNode.rightChild =cursor;
+                }
+                else{
+                    System.out.println("unknown type");
+                }
+                if(cursor.leftChild!=null){
+                    minroot.rightChild=cursor.leftChild;
+                }else{
+                    minroot.rightChild =null;
+                }
+                cursor.leftChild = minroot;
+                if(fatherNode.weight==0){
+                    //根节点的fatherNode需要调回
+                    root = fatherNode.rightChild;
+                }
+                return;
+            }
+            if((cursor.leftChild!=null)&&
+                ((cursor.leftChild.leftChild!=null)||
+                (cursor.leftChild.rightChild!=null))){
+                //RL型
+                //先调整成RR型
+                minroot.rightChild= cursor.leftChild;
+                Node rightPad= minroot.rightChild.rightChild;
+                cursor.leftChild =rightPad==null?null:rightPad;
+                minroot.rightChild.rightChild=cursor;
+
+                //更新cursor
+                cursor = minroot.rightChild;
+                
+                if(fatherNode.weight==0){
+                    fatherNode.rightChild =cursor;
+                }
+                else if(fatherNode.leftChild!=null&& fatherNode.leftChild.weight==minroot.weight){
+                    fatherNode.leftChild= cursor;
+                }
+                else if(fatherNode.rightChild!=null&&fatherNode.rightChild.weight==minroot.weight){
+                    fatherNode.rightChild =cursor;
+                }
+                else{
+                    System.out.println("unknown type");
+                }
+                if(cursor.leftChild!=null){
+                    minroot.rightChild=cursor.leftChild;
+                }else{
+                    minroot.rightChild =null;
+                }
+                cursor.leftChild = minroot;
+                if(fatherNode.weight==0){
+                    //根节点的fatherNode需要调回
+                    root = fatherNode.rightChild;
+                }
+                return;
+            }
+        }
+    }
+    //删除之后需要平衡.
+    public void deleteAVLNode(int target){
+        //先删除
+        deleteSortedNode(target);
+        //检查+调整
+        Stack<Node> container = new Stack<>();
+        checkBanlance(container,root);
+    }
 
     //todo:并查集实现  
 
