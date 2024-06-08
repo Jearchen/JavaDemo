@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/JavaDemo.iml" filepath="$PROJECT_DIR$/JavaDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/JavaGrammer/JavaGrammer.iml" filepath="$PROJECT_DIR$/JavaGrammer/JavaGrammer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/Socket/Socket.iml" filepath="$PROJECT_DIR$/src/Socket/Socket.iml" />
+      <module fileurl="file://$PROJECT_DIR$/leetcode/leetcode.iml" filepath="$PROJECT_DIR$/leetcode/leetcode.iml" />
+    </modules>
+  </component>
+</project>
