@@ -1,12 +1,12 @@
-### **Author**:Jearchen
-### **Project**:some example tests related to Java
-### **Start Date**:2023/10/13
-### **log**:
-    > 1、add kotlin grammer module
-    >> contains some try of kotlin grammer.
-    > 2、add groovy grammer module
-    >> none.
-    > 3、add leetcode module
-    >> contains datastructure topic like array、queue、stack、graph.
-    > 4、add JDK test module
-    >> contains basic structuretest、 interface usage、socket extend test、thread test realated to guc...
+## Java Grammer Exercise
++ Jdk dynamic proxy exp
++ Emuerate exp
++ Iterate exp
++ Netty usage exp
++ Stream usage exp
++ Thread exp
++ BTree exp
+
+Author: *Jearchen*
+
+Date: *2025/09/16*
