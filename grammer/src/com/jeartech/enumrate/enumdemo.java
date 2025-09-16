@@ -13,8 +13,8 @@ public class enumdemo {
      */
     public enum DragonBron{
         POCHAR("Pochar",1), ORCHI("Orchi",2), BOZAR("Bozar",3);
-        private   String announce;
-        private   int content;
+        private  String announce;
+        private  int content;
 
         DragonBron(String announce,int content) {
             this.announce = announce;
